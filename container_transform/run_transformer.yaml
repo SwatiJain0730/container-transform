@@ -1,0 +1,35 @@
+---
+- name: Run python scripts in remote machine
+  hosts: localhost
+  tasks:
+    - name: "creating directory"
+      file:
+        state: directory
+        path: /home/ec2-user/ansible_swati/test_python
+        owner: ec2-user
+        group: ec2-user
+        mode: 0750
+    - name: "copy python scripts"
+      synchronize:
+        mode: push
+        dest: /home/ec2-user/ansible_swati/test_python/
+        src: /home/ec2-user/transform/
+      delegate_to: "localhost"
+#    - name: "get current working directory ans list of files"
+#      shell:
+#         "pwd && ls -lrt"
+#      register: out
+    - name: "install container transform"
+      shell :
+          "pwd && ll && cd /home/ec2-user/transform/container-transform &&  pip3 install container-transform"
+#      register: out
+    - name: "transform marathon json"
+      shell:
+         "cd /home/ec2-user/transform/container-transform && container-transform -i marathon -o helm job.json"
+      register: out
+    - name: "Print the message"
+      debug:
+        msg: "{{ out.stdout }}"
+
+
+

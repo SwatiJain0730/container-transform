@@ -1,0 +1,36 @@
+{
+    "id": "backout-processor-microservice-pds-event-microservice-cbis",
+    "description": "Backout queue processing listener",
+    "labels": {},
+    "run": {
+      "cpus": 1,
+      "mem": 32,
+      "disk": 100,
+      "env": {
+        "ENABLE_HTTPS": "FALSE"
+      },
+      "placement": {
+        "constraints": []
+      }
+    },
+    "artifacts": [
+      {
+        "uri": "file:///etc/docker.tar.gz",
+        "extract": true,
+        "executable": false,
+        "cache": false
+      }
+    ],
+    "cmd": "python3 -m http.server 8080",
+
+    "networks": [ { "mode": "container/bridge" } ],
+    "container": {
+      "type": "DOCKER",
+      "docker": {
+        "image": "python:3"
+      },
+      "portMappings": [
+        { "containerPort": 8080, "hostPort": 0 }
+      ]
+    }
+  }

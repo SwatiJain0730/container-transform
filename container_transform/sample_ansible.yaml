@@ -1,0 +1,25 @@
+---
+- name: Run python scripts in remote machine
+  hosts: localhost
+  tasks:
+    - name: "creating directory"
+      file:
+        state: directory
+        path: /home/ec2-user/ansible_swati/test_python
+        owner: ec2-user
+        group: ec2-user
+        mode: 0750
+    - name: "copy python scripts"
+      synchronize:
+        mode: push
+        dest: /home/ec2-user/ansible_swati/test_python/get_host_name.py
+        src: /home/ec2-user/ansible_swati/get_host_name.py
+      delegate_to: "localhost"
+    - name: "run get_host_name.py"
+      command: python3 /home/ec2-user/ansible_swati/test_python/get_host_name.py
+    - name: "read file content"
+      command: "cat /home/ec2-user/test_file"
+      register: out
+    - name: "Print the message"
+      debug:
+        msg: "{{ out.stdout }}"
