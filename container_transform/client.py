@@ -60,12 +60,17 @@ def transform(input_file, input_type, output_type, verbose, quiet):
     All options may be set by environment variables with the prefix "CT_"
     followed by the full argument name.
     """
-    print("*&*&*&*&*&*&&(*&(", input_file, input_type, output_type)
     converter = Converter(input_file, input_type, output_type)
     output = converter.convert(verbose)
 
     click.echo(click.style(output, fg='green'))
+    write_to_output_file(output)
 
     if not quiet:
         for message in converter.messages:
             click.echo(click.style(message, fg='red', bold=True), err=True)
+
+
+def write_to_output_file(generated_output):
+    with open('values.yaml', 'w') as values_file:
+        values_file.write(generated_output)

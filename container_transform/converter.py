@@ -49,23 +49,14 @@ class Converter(object):
         output_containers = []
 
         for container in containers:
-            print("------ CONTAINER ", container)
-            print("***********************************************")
             converted_container = self._convert_container(
                 container,
                 input_transformer,
                 output_transformer
             )
-            print("------ CONVERTED CONTAINER ", converted_container)
-            print("***********************************************")
             validated = output_transformer.validate(converted_container)
-            print("------ VALIDATED CONTAINER ", validated)
-            print("***********************************************")
             output_containers.append(validated)
 
-        print("OUTPUT CON ", output_containers)
-        # env = input_transformer.ingest_environment()
-        # output_containers.append(env)
         return output_transformer.emit_containers(output_containers, verbose)
 
     def _convert_container(self, container, input_transformer, output_transformer):
@@ -78,30 +69,20 @@ class Converter(object):
         :rtype: dict
         :return: A output_type container definition
         """
-        print("CONTAINER =======", container)
-        print("*******************************")
         output = {}
         for parameter, options in ARG_MAP_JOB.items():
-            print("1.......parameter, ", parameter)
-            print("2......options ", options)
             output_name = options.get(self.output_type, {}).get('name')
             output_required = options.get(self.output_type, {}).get('required')
-            print("output_name", output_name)
-            print("output_required", output_required)
 
             input_name = options.get(self.input_type, {}).get('name')
-            print("input_name", input_name)
 
             if container.get(input_name) and \
                     hasattr(input_transformer, 'ingest_{}'.format(parameter)) and \
                     output_name and hasattr(output_transformer, 'emit_{}'.format(parameter)):
                 # call transform_{}
                 ingest_func = getattr(input_transformer, 'ingest_{}'.format(parameter))
-                print("ingest_func ", ingest_func)
                 emit_func = getattr(output_transformer, 'emit_{}'.format(parameter))
-                print("emit_func ", emit_func)
                 output[output_name] = emit_func(ingest_func(container.get(input_name)))
-                print("output ", output)
 
             if not container.get(input_name) and output_required:
                 msg_template = 'Container {name} is missing required parameter "{output_name}".'
@@ -112,5 +93,4 @@ class Converter(object):
                         name=container.get('name', container)
                     )
                 )
-
         return output

@@ -1,7 +1,21 @@
 ---
 - name: Run python scripts in remote machine
   hosts: localhost
+  become: yes
   tasks:
+    - name: "check for pyton installation"
+      raw: test -e /usr/bin/python3
+      changed_when: false
+      failed_when: false
+      register: check_python
+    - name: "install python if does not exists"
+      raw: yum -y install python
+      when: check_python.rc != 0
+    - name: "Install git"
+      yum:
+        name: git
+        state: present
+        update_cache: yes
     - name: "creating directory"
       file:
         state: directory
@@ -9,27 +23,27 @@
         owner: ec2-user
         group: ec2-user
         mode: 0750
-    - name: "copy python scripts"
-      synchronize:
-        mode: push
-        dest: /home/ec2-user/ansible_swati/test_python/
-        src: /home/ec2-user/transform/
-      delegate_to: "localhost"
-#    - name: "get current working directory ans list of files"
-#      shell:
-#         "pwd && ls -lrt"
-#      register: out
+    - name: "clone transformer repo"
+      ansible.builtin.git:
+        repo: https://github.com/SwatiJain0730/container-transform.git
+        dest: /home/ec2-user/ansible_swati/test_python
+#    - name: "copy json file"
+#      synchronize:
+#        mode: push
+#        src: /home/ec2-user/app_repo/jobs.json
+#        dest: /home/ec2-user/ansible_swati/test_python/container-transform/
+#      delegate_to: "localhost"
     - name: "install container transform"
       shell :
-          "pwd && ll && cd /home/ec2-user/transform/container-transform &&  pip3 install container-transform"
-#      register: out
+          "cd /home/ec2-user/ansible_swati/test_python &&  pip3 install ."
+#      register: result0
+#    - debug: msg="{{result0.stdout}}"
     - name: "transform marathon json"
-      shell:
-         "cd /home/ec2-user/transform/container-transform && container-transform -i marathon -o helm job.json"
+      command: "container-transform -i marathon -o helm /home/ec2-user/app_repo/jobs.json"
       register: out
+#    - debug: msg="{{ out.stdout }}"
     - name: "Print the message"
       debug:
         msg: "{{ out.stdout }}"
-
 
 
